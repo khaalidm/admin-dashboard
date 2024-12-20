@@ -5,11 +5,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY package*.json ./
+COPY ../backend/package*.json ./
 RUN npm install
 
 # Copy the rest of the application
-COPY . .
+COPY ../backend ./
 
 # Rebuild bcrypt for the correct platform
 RUN apk add --no-cache make gcc g++ python3 && \
@@ -21,3 +21,5 @@ EXPOSE 5000
 
 # Start the application in dev mode for demonstration purposes
 CMD ["npm", "run", "dev"]
+#keep container running
+#CMD ["tail", "-f", "/dev/null"]
