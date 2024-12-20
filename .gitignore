@@ -4,3 +4,4 @@ backend/.env
 *.log
 
 .idea
+frontend/node_modules
