@@ -5,11 +5,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY ../backend/package*.json ./
-RUN npm install
-
 # Copy the rest of the application
 COPY ../backend ./
+
+#inall npm no cache
+RUN npm install --no-cache
 
 # Rebuild bcrypt for the correct platform
 RUN apk add --no-cache make gcc g++ python3 && \
