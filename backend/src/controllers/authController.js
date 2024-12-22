@@ -65,9 +65,10 @@ exports.forgotPassword = async (req, res) => {
 
         const resetToken = crypto.randomBytes(32).toString('hex');
         admin.resetPasswordToken = resetToken;
-        admin.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        admin.resetPasswordExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
         await admin.save();
-        const resetUrl = `http://localhost:5000/api/auth/reset-password/${resetToken}`;
+
+        const resetUrl = `http://localhost:4200/reset-password/${resetToken}`;
         const msg = {
             to: email,
             from: 'your-email@example.com',
@@ -75,7 +76,11 @@ exports.forgotPassword = async (req, res) => {
             text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
         };
 
-        await sgMail.send(msg);
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+        console.log('Reset URL:', resetUrl);
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // await sgMail.send(msg);
         res.status(200).json({ message: 'Password reset email sent' });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });

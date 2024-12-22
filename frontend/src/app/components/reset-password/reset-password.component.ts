@@ -1,35 +1,37 @@
-import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-reset-password',
+  templateUrl: './reset-password.component.html',
   imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
     ReactiveFormsModule
   ],
-  templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements OnInit {
   resetPasswordForm: FormGroup;
+  message: string = '';
+  token: string = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private route: ActivatedRoute, private authService: AuthService, private fb: FormBuilder) {
     this.resetPasswordForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(6)]]
+      newPassword: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  ngOnInit() {
+    this.token = this.route.snapshot.paramMap.get('token')!;
   }
 
   onSubmit() {
     if (this.resetPasswordForm.valid) {
-      // Handle form submission
+      this.authService.resetPassword(this.token, this.resetPasswordForm.value.newPassword).subscribe(
+        response => this.message = 'Password reset successful',
+        error => this.message = 'Error resetting password'
+      );
     }
   }
 }

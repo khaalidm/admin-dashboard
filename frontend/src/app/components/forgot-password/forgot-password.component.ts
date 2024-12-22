@@ -1,33 +1,22 @@
+// forgot-password.component.ts
+
 import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../services/auth.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-forgot-password',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    ReactiveFormsModule,
-  ],
   templateUrl: './forgot-password.component.html',
+  imports: [
+    ReactiveFormsModule
+  ],
   styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent {
   forgotPasswordForm: FormGroup;
+  message: string | undefined;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private snackBar: MatSnackBar
-  ) {
+  constructor(private authService: AuthService, private fb: FormBuilder) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
@@ -35,11 +24,10 @@ export class ForgotPasswordComponent {
 
   onSubmit() {
     if (this.forgotPasswordForm.valid) {
-      this.authService.forgotPassword(this.forgotPasswordForm.value.email)
-        .subscribe({
-          next: () => this.snackBar.open('Reset link sent to your email', 'Close', { duration: 3000 }),
-          error: () => this.snackBar.open('Failed to send reset link', 'Close', { duration: 3000 })
-        });
+      this.authService.forgotPassword(this.forgotPasswordForm.value.email).subscribe(
+        response => this.message = 'Password reset email sent',
+        error => this.message = 'Error sending password reset email'
+      );
     }
   }
 }
