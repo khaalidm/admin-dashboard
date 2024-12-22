@@ -22,7 +22,7 @@ exports.registerAdmin = async (req, res) => {
 };
 
 exports.loginAdmin = async (req, res) => {
-    const { email, password, token } = req.body;
+    const { email, password } = req.body;
     try {
         const admin = await Admin.findOne({ email });
         if (!admin) return res.status(400).json({ error: 'Invalid email or password' });
@@ -30,15 +30,28 @@ exports.loginAdmin = async (req, res) => {
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return res.status(400).json({ error: 'Invalid email or password' });
 
-        const tokenValid = speakeasy.totp.verify({
-            secret: admin.totpSecret,
-            encoding: 'base32',
-            token: token
-        });
-        if (!tokenValid) return res.status(400).json({ error: 'Invalid TOTP token' });
+        const totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
+        admin.totpSecret = totpSecret;
+        await admin.save();
 
-        const jwtToken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token: jwtToken });
+        const totpToken = speakeasy.totp({
+            secret: totpSecret,
+            encoding: 'base32'
+        });
+
+        const msg = {
+            to: email,
+            from: 'your-email@example.com',
+            subject: 'Your TOTP Code',
+            text: `Your TOTP code is: ${totpToken}`
+        };
+
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+        console.log('TOTP Token:', totpToken);
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+        // await sgMail.send(msg);
+
+        res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -105,8 +118,12 @@ exports.totpSetup = async (req, res) => {
     }
 };
 
+
 exports.verifyTotp = async (req, res) => {
     const { email, token } = req.body;
+    console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+    console.log('Email:', email);
+    console.log('Token:', token);
     try {
         const admin = await Admin.findOne({ email });
         if (!admin) return res.status(400).json({ error: 'Email not found' });
@@ -118,7 +135,8 @@ exports.verifyTotp = async (req, res) => {
         });
         if (!tokenValid) return res.status(400).json({ error: 'Invalid TOTP token' });
 
-        res.status(200).json({ message: 'TOTP verified successfully' });
+        const jwtToken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ token: jwtToken });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
