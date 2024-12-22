@@ -8,7 +8,7 @@ WORKDIR /app
 # Copy the rest of the application
 COPY ../backend ./
 
-#inall npm no cache
+#install npm no cache
 RUN npm install --no-cache
 
 # Rebuild bcrypt for the correct platform

@@ -1,4 +1,3 @@
-// backend/src/models/adminModel.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
@@ -12,7 +11,9 @@ const adminSchema = new mongoose.Schema({
 
 adminSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
+    console.log('Hashing password before saving:', this.password);
     this.password = await bcrypt.hash(this.password, 10);
+    console.log('Hashed password:', this.password);
     next();
 });
 

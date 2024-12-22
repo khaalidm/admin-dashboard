@@ -5,18 +5,27 @@ const bcrypt = require('bcrypt');
 const speakeasy = require('speakeasy');
 const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
+const Joi = require('joi');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const mailjet = require('node-mailjet').apiConnect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
+
+// backend/src/controllers/adminController.js
 
 exports.registerAdmin = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Registering admin with email:', email);
+        console.log('Original password:', password);
+
         const totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
-        const admin = new Admin({ email, password: hashedPassword, totpSecret });
+        const admin = new Admin({ email, password, totpSecret });
         await admin.save();
+
         res.status(201).json({ message: 'Admin registered successfully' });
     } catch (err) {
+        console.log('Error during registration:', err.message);
         res.status(400).json({ error: err.message });
     }
 };
@@ -46,13 +55,51 @@ exports.loginAdmin = async (req, res) => {
             text: `Your TOTP code is: ${totpToken}`
         };
 
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+        //=========================================================================================================
+    //     const request = mailjet.post('send', { version: 'v3.1' }).request({
+    //         Messages: [
+    //             {
+    //                 From: {
+    //                     Email: 'khaalidm.m@gmail.com',
+    //                     Name: 'Your Name'
+    //                 },
+    //                 To: [
+    //                     {
+    //                         Email: email,
+    //                         Name: 'Admin'
+    //                     }
+    //                 ],
+    //                 Subject: 'Your TOTP Code',
+    //                 TextPart: `Your TOTP code is: ${totpToken}`
+    //             }
+    //         ]
+    //     });
+    //
+    //     request
+    //         .then((result) => {
+    //             console.log(result.body);
+    //             res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
+    //         })
+    //         .catch((err) => {
+    //             console.error(err.statusCode);
+    //             res.status(500).json({ error: 'Error sending email' });
+    //         });
+    // } catch (err) {
+    //     console.log('Error during login:', err.message);
+    //     res.status(500).json({error: err.message});
+    // }
+//=========================================================================================================
+
+
+
+    console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
         console.log('TOTP Token:', totpToken);
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
         // await sgMail.send(msg);
 
         res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
     } catch (err) {
+        console.log('Error during login:', err.message);
         res.status(500).json({ error: err.message });
     }
 };
@@ -76,9 +123,7 @@ exports.forgotPassword = async (req, res) => {
             text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
         };
 
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
         console.log('Reset URL:', resetUrl);
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // await sgMail.send(msg);
         res.status(200).json({ message: 'Password reset email sent' });
@@ -89,6 +134,16 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
+
+    // Define password validation schema
+    const schema = Joi.object({
+        newPassword: Joi.string().min(8).pattern(new RegExp('^(?=.*[A-Z])(?=.*[0-9]).{8,}$')).required()
+    });
+
+    // Validate the new password
+    const { error } = schema.validate({ newPassword });
+    if (error) return res.status(400).json({ error: 'Password does not meet the required criteria' });
+
     try {
         const admin = await Admin.findOne({
             resetPasswordToken: token,
@@ -96,7 +151,7 @@ exports.resetPassword = async (req, res) => {
         });
         if (!admin) return res.status(400).json({ error: 'Invalid or expired token' });
 
-        admin.password = await bcrypt.hash(newPassword, 10);
+        admin.password = newPassword;
         admin.resetPasswordToken = undefined;
         admin.resetPasswordExpires = undefined;
         await admin.save();
@@ -123,12 +178,8 @@ exports.totpSetup = async (req, res) => {
     }
 };
 
-
 exports.verifyTotp = async (req, res) => {
     const { email, token } = req.body;
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
-    console.log('Email:', email);
-    console.log('Token:', token);
     try {
         const admin = await Admin.findOne({ email });
         if (!admin) return res.status(400).json({ error: 'Email not found' });
@@ -140,8 +191,9 @@ exports.verifyTotp = async (req, res) => {
         });
         if (!tokenValid) return res.status(400).json({ error: 'Invalid TOTP token' });
 
-        const jwtToken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token: jwtToken });
+        const sessionToken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'TOTP verified successfully', token: sessionToken });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
