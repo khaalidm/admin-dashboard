@@ -1,45 +1,74 @@
 import { Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { RouterModule } from '@angular/router';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {MatCard} from '@angular/material/card';
+import {MatFormField, MatLabel} from '@angular/material/form-field';
+import {MatButton} from '@angular/material/button';
+import {MatInput} from '@angular/material/input';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatButtonModule,
-    RouterModule,
-    HttpClientModule
-  ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
+  imports: [
+    MatCard,
+    MatLabel,
+    ReactiveFormsModule,
+    MatFormField,
+    MatButton,
+    MatInput,
+    NgIf
+  ],
 })
 export class LoginComponent {
   loginForm: FormGroup;
+  totpForm: FormGroup;
+  isLoginStep = true;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private snackBar: MatSnackBar
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      token: ['', [Validators.required]]
+      password: ['', [Validators.required]]
+    });
+
+    this.totpForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      token: ['', [Validators.required]],
     });
   }
 
-  onSubmit() {
+  onSubmitLogin() {
     if (this.loginForm.valid) {
-      this.http.post('/api/login', this.loginForm.value).subscribe(response => {
-        console.log('Login successful', response);
-      }, error => {
-        console.error('Login failed', error);
-      });
+      this.authService.login(this.loginForm.value)
+        .subscribe({
+          next: () => {
+            this.isLoginStep = false;
+            this.totpForm.patchValue({ email: this.loginForm.value.email });
+            this.snackBar.open('Login successful, please enter your TOTP token', 'Close', { duration: 3000 });
+          },
+          error: () => this.snackBar.open('Login failed', 'Close', { duration: 3000 })
+        });
+    }
+  }
+
+  onSubmitTotp() {
+    if (this.totpForm.valid) {
+      this.authService.verifyTotp(this.totpForm.value)
+        .subscribe({
+          next: (response) => {
+            localStorage.setItem('jwtToken', response.token);
+            this.snackBar.open('TOTP verification successful', 'Close', { duration: 3000 });
+            // Navigate to the admin dashboard
+            window.location.href = '/admin-dashboard';
+          },
+          error: () => this.snackBar.open('TOTP verification failed', 'Close', { duration: 3000 })
+        });
     }
   }
 }

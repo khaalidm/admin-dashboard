@@ -1,18 +1,25 @@
 <mat-card>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <mat-form-field>
-      <mat-label>Email</mat-label>
-      <input matInput formControlName="email" type="email">
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Password</mat-label>
-      <input matInput formControlName="password" type="password">
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>TOTP Token</mat-label>
-      <input matInput formControlName="token" type="text">
-    </mat-form-field>
+  <form *ngIf="isLoginStep" [formGroup]="loginForm" (ngSubmit)="onSubmitLogin()">
+    <div class="login-section">
+      <mat-form-field>
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password">
+      </mat-form-field>
+    </div>
     <button mat-raised-button color="primary" type="submit">Login</button>
   </form>
+
+  <form *ngIf="!isLoginStep" [formGroup]="totpForm" (ngSubmit)="onSubmitTotp()">
+    <div class="totp-section">
+      <mat-form-field>
+        <mat-label>TOTP Token</mat-label>
+        <input matInput formControlName="token" type="text">
+      </mat-form-field>
+    </div>
+    <button mat-raised-button color="primary" type="submit">Verify TOTP</button>
+  </form>
 </mat-card>
-<!--<h1>Login</h1>-->

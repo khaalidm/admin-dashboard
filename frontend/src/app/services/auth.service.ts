@@ -13,4 +13,13 @@ export class AuthService {
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
+
+  login(credentials: { email: string, password: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, credentials);
+  }
+
+  verifyTotp(credentials: { email: string, token: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/verify-totp`, credentials);
+  }
 }
+
