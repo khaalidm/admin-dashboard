@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import {MatCard} from '@angular/material/card';
@@ -28,6 +29,7 @@ export class TotpSetupComponent {
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
+    private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.totpForm = this.fb.group({
@@ -59,7 +61,7 @@ export class TotpSetupComponent {
               window.location.href = '/admin-dashboard';
             },
             (error: any) => {
-              // Handle TOTP verification error
+              this.snackBar.open('TOTP verification failed, please try again', 'Close', { duration: 3000 });
             }
           );
         }
