@@ -1,4 +1,3 @@
-
 const Admin = require('../models/adminModel');
 const LoginAttempt = require('../models/loginAttemptModel');
 const jwt = require('jsonwebtoken');
@@ -8,8 +7,6 @@ const crypto = require('crypto');
 const Joi = require('joi');
 const qrcode = require('qrcode');
 const { sendEmail } = require('../services/mailjetService');
-
-// backend/src/controllers/adminController.js
 
 exports.registerAdmin = async (req, res) => {
     const { email, password } = req.body;
@@ -80,7 +77,6 @@ exports.forgotPassword = async (req, res) => {
 
         console.log('Reset URL:', resetUrl);
 
-        // await sgMail.send(msg);
         res.status(200).json({ message: 'Password reset email sent' });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
