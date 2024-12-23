@@ -11,8 +11,8 @@ This project is an Admin Dashboard application built with Angular for the fronte
 
 ### 1. Clone the Repository
 ```sh
-git clone <repository-url>
-cd <repository-directory>
+git clone git@github.com:khaalidm/admin-dashboard.git
+cd admin-dashboard
 ```
 
 ### 2. copy the .example.env file
