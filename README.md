@@ -38,3 +38,13 @@ docker-compose build
 docker-compose up
 ```
 
+### 5. Register test users
+```shell
+curl --location 'http://localhost:5000/api/auth/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email": "test@example.com",
+    "password": "1234"
+}'
+```
+
