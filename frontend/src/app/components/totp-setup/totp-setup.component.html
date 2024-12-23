@@ -1,18 +1,11 @@
-<div class="container">
-  <mat-card class="totp-setup-card">
-    <mat-card-title>Set Up Two-Factor Authentication</mat-card-title>
-    <mat-card-content>
-      <img [src]="qrCodeUrl" alt="Scan QR Code" class="qr-code" />
-      <p>Scan the QR code with your authenticator app.</p>
-      <form [formGroup]="totpForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>TOTP Code</mat-label>
-          <input matInput formControlName="code" type="text" />
-        </mat-form-field>
-        <button mat-raised-button color="primary" type="submit" class="full-width">
-          Verify
-        </button>
-      </form>
-    </mat-card-content>
-  </mat-card>
+<div>
+  <h1>Setup TOTP</h1>
+  <img [src]="qrCodeUrl" alt="TOTP QR Code">
+  <form [formGroup]="totpForm" (ngSubmit)="onSubmit()">
+    <mat-form-field>
+      <mat-label>TOTP Token</mat-label>
+      <input matInput formControlName="token">
+    </mat-form-field>
+    <button mat-raised-button type="submit">Verify</button>
+  </form>
 </div>

@@ -22,6 +22,10 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/verify-totp`, credentials);
   }
 
+  totpSetup(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/totp-setup`, { email });
+  }
+
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
   }

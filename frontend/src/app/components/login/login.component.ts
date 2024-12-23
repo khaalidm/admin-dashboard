@@ -45,12 +45,18 @@ export class LoginComponent {
 
   onSubmitLogin() {
     if (this.loginForm.valid) {
+      localStorage.setItem('email', this.loginForm.value.email);
       this.authService.login(this.loginForm.value)
         .subscribe({
-          next: () => {
-            this.totpForm.patchValue({ email: this.loginForm.value.email });
-            this.snackBar.open('Login successful, please enter your TOTP token', 'Close', { duration: 3000 });
-            this.isLoginStep = false;
+          next: (response) => {
+            if (response.redirectTo) {
+              window.location.href = response.redirectTo;
+            } else {
+              // localStorage.setItem('email', this.loginForm.value.email);
+              this.totpForm.patchValue({ email: this.loginForm.value.email });
+              this.snackBar.open('Login successful, please enter your TOTP token', 'Close', { duration: 3000 });
+              this.isLoginStep = false;
+            }
           },
           error: () => this.snackBar.open('Login failed', 'Close', { duration: 3000 })
         });

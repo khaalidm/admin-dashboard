@@ -1,11 +1,13 @@
 
 const Admin = require('../models/adminModel');
+const LoginAttempt = require('../models/loginAttemptModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const speakeasy = require('speakeasy');
 const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
 const Joi = require('joi');
+const qrcode = require('qrcode');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -38,6 +40,15 @@ exports.loginAdmin = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return res.status(400).json({ error: 'Invalid email or password' });
+
+        const loginAttempts = await LoginAttempt.findOne({ email });
+
+        if (!loginAttempts) {
+            console.log('No login attempts found, creating new record');
+            // Redirect to TOTP setup page
+            res.status(200).json({ message: 'First login, please set up TOTP', redirectTo: '/totp-setup' });
+            return;
+        }
 
         const totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
         admin.totpSecret = totpSecret;
@@ -98,6 +109,9 @@ exports.loginAdmin = async (req, res) => {
         // await sgMail.send(msg);
 
         res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
+
+        await LoginAttempt.create({ email, success: true });
+        console.log(`Admin with email: ${email} logged in at ${new Date().toISOString()}`);
     } catch (err) {
         console.log('Error during login:', err.message);
         res.status(500).json({ error: err.message });
@@ -172,7 +186,9 @@ exports.totpSetup = async (req, res) => {
         admin.totpSecret = secret.base32;
         await admin.save();
 
-        res.status(200).json({ qrCodeUrl: secret.otpauth_url });
+        const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+
+        res.status(200).json({ qrCodeUrl });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -189,10 +205,14 @@ exports.verifyTotp = async (req, res) => {
             encoding: 'base32',
             token: token
         });
-        if (!tokenValid) return res.status(400).json({ error: 'Invalid TOTP token' });
+        if (!tokenValid) {
+            await LoginAttempt.create({ email, success: false });
+            return res.status(400).json({ error: 'Invalid TOTP token' });
+        }
 
         const sessionToken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+        await LoginAttempt.create({ email, success: true });
         res.status(200).json({ message: 'TOTP verified successfully', token: sessionToken });
     } catch (err) {
         res.status(500).json({ error: err.message });
