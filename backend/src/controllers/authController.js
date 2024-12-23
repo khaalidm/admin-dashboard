@@ -50,65 +50,8 @@ exports.loginAdmin = async (req, res) => {
             return;
         }
 
-        const totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
-        admin.totpSecret = totpSecret;
-        await admin.save();
-
-        const totpToken = speakeasy.totp({
-            secret: totpSecret,
-            encoding: 'base32'
-        });
-
-        const msg = {
-            to: email,
-            from: 'your-email@example.com',
-            subject: 'Your TOTP Code',
-            text: `Your TOTP code is: ${totpToken}`
-        };
-
-        //=========================================================================================================
-    //     const request = mailjet.post('send', { version: 'v3.1' }).request({
-    //         Messages: [
-    //             {
-    //                 From: {
-    //                     Email: 'khaalidm.m@gmail.com',
-    //                     Name: 'Your Name'
-    //                 },
-    //                 To: [
-    //                     {
-    //                         Email: email,
-    //                         Name: 'Admin'
-    //                     }
-    //                 ],
-    //                 Subject: 'Your TOTP Code',
-    //                 TextPart: `Your TOTP code is: ${totpToken}`
-    //             }
-    //         ]
-    //     });
-    //
-    //     request
-    //         .then((result) => {
-    //             console.log(result.body);
-    //             res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
-    //         })
-    //         .catch((err) => {
-    //             console.error(err.statusCode);
-    //             res.status(500).json({ error: 'Error sending email' });
-    //         });
-    // } catch (err) {
-    //     console.log('Error during login:', err.message);
-    //     res.status(500).json({error: err.message});
-    // }
-//=========================================================================================================
-
-
-
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
-        console.log('TOTP Token:', totpToken);
-        console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
-        // await sgMail.send(msg);
-
-        res.status(200).json({ message: 'Login successful, please check your email for the TOTP token' });
+        // If TOTP is already set up, prompt for TOTP verification
+        res.status(200).json({ message: 'Login successful, please verify TOTP'});
 
         await LoginAttempt.create({ email, success: true });
         console.log(`Admin with email: ${email} logged in at ${new Date().toISOString()}`);
@@ -186,7 +129,8 @@ exports.totpSetup = async (req, res) => {
         admin.totpSecret = secret.base32;
         await admin.save();
 
-        const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+        const otpauthUrl = `otpauth://totp/AdminDashboard:${email}?secret=${secret.base32}&issuer=AdminDashboard`;
+        const qrCodeUrl = await qrcode.toDataURL(otpauthUrl);
 
         res.status(200).json({ qrCodeUrl });
     } catch (err) {

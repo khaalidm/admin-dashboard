@@ -18,12 +18,12 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/login`, credentials);
   }
 
-  verifyTotp(credentials: { email: string, token: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/verify-totp`, credentials);
+  totpSetup(email: string): Observable<{ qrCodeUrl: string }> {
+    return this.http.post<{ qrCodeUrl: string }>(`${this.apiUrl}/totp-setup`, { email });
   }
 
-  totpSetup(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/totp-setup`, { email });
+  verifyTotp(data: { email: string, token: string }): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(`${this.apiUrl}/verify-totp`, data);
   }
 
   resetPassword(token: string, newPassword: string): Observable<any> {

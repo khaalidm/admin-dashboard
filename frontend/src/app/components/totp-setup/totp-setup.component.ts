@@ -35,16 +35,12 @@ export class TotpSetupComponent {
   }
 
   ngOnInit(): void {
-    console.log('ngOnInit called');
     if (isPlatformBrowser(this.platformId)) {
       const email = localStorage.getItem('email');
       if (email) {
         this.authService.totpSetup(email).subscribe((response: { qrCodeUrl: string }) => {
           this.qrCodeUrl = response.qrCodeUrl;
         });
-      } else {
-        console.log('Email not found in localStorage');
-        // Handle case where email is not found in local storage
       }
     }
   }
