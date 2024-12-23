@@ -1,2 +1,16 @@
-<a (click)="logout()" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">Logout</a>
-<h1>admin-dashboard works!</h1>
+<nav>
+  <ul>
+    <li><a routerLink="/admin-dashboard">Dashboard</a></li>
+    <li><a routerLink="/user-stats">User Stats</a></li>
+    <li><a routerLink="/system-health">System Health</a></li>
+    <li><a routerLink="/upcoming-feature-1">Upcoming Feature 1</a></li>
+    <li><a routerLink="/upcoming-feature-2">Upcoming Feature 2</a></li>
+  </ul>
+</nav>
+
+<div class="content">
+  <a (click)="logout()" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">Logout</a>
+  <h1>Admin Dashboard</h1>
+  <p>Welcome to the admin dashboard. Here you can find basic information about the system.</p>
+  <router-outlet></router-outlet>
+</div>

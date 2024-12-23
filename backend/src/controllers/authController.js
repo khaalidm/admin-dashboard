@@ -4,14 +4,10 @@ const LoginAttempt = require('../models/loginAttemptModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const speakeasy = require('speakeasy');
-const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
 const Joi = require('joi');
 const qrcode = require('qrcode');
-
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-const mailjet = require('node-mailjet').apiConnect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
+const { sendEmail } = require('../services/mailjetService');
 
 // backend/src/controllers/adminController.js
 
@@ -79,6 +75,8 @@ exports.forgotPassword = async (req, res) => {
             subject: 'Password Reset',
             text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
         };
+
+        await sendEmail(email, 'Password Reset', `You requested a password reset. Click the link to reset your password: ${resetUrl}`);
 
         console.log('Reset URL:', resetUrl);
 

@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
+import {MatCard} from '@angular/material/card';
 
 @Component({
   selector: 'app-totp-setup',
@@ -14,7 +15,8 @@ import { Inject, PLATFORM_ID } from '@angular/core';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatCard
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./totp-setup.component.scss']

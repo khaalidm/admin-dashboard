@@ -7,6 +7,7 @@ import {MatFormField, MatLabel} from '@angular/material/form-field';
 import {MatButton} from '@angular/material/button';
 import {MatInput} from '@angular/material/input';
 import {NgIf} from '@angular/common';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,8 @@ import {NgIf} from '@angular/common';
     MatFormField,
     MatButton,
     MatInput,
-    NgIf
+    NgIf,
+    RouterLink
   ],
 })
 export class LoginComponent {

@@ -1,5 +1,5 @@
-<div>
-  <h1>Setup TOTP</h1>
+<mat-card>
+  <h2>Setup TOTP</h2>
   <img [src]="qrCodeUrl" alt="TOTP QR Code">
   <form [formGroup]="totpForm" (ngSubmit)="onSubmit()">
     <mat-form-field>
@@ -8,4 +8,4 @@
     </mat-form-field>
     <button mat-raised-button type="submit">Verify</button>
   </form>
-</div>
+</mat-card>
