@@ -48,3 +48,7 @@ curl --location 'http://localhost:5000/api/auth/register' \
 }'
 ```
 
+### 6. navigate to:
+
+http://localhost:4200/
+
